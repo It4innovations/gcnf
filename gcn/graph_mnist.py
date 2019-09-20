@@ -47,7 +47,7 @@ X_train_graphs = []
 for i in range(100):
     X_train_graphs.append(convert(X_train[i]))
 
-gcn = GCN(GT)
+gcn = GCN(GT, depth=5)
 hl = tf.layers.Dense(units=32,activation=tf.nn.relu)
 ol = tf.layers.Dense(units=10,activation=None)
 

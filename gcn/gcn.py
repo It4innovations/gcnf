@@ -3,14 +3,14 @@ import numpy as np
 
 
 class GCN:
-    def __init__(self, graph_type):
+    def __init__(self, graph_type, depth):
         self.gt = graph_type
         self.nns = {}
         for nt in self.gt.node_types:
             self.nns[nt] = [tf.layers.Dense(units=32,activation=tf.nn.relu),
                             tf.layers.Dense(units=nt.vector_size, activation=None)]
         self.inputs = self.create_input_placeholders()
-        self.outputs = self.build_net(self.inputs)
+        self.outputs = self.build_net(self.inputs, depth)
 
     def create_input_placeholders(self):
         placeholders = {}
@@ -31,7 +31,7 @@ class GCN:
             layer_input = l(layer_input)
         return tf.add(layer_input, state)
 
-    def build_net(self, inputs, depth=1):
+    def build_net(self, inputs, depth):
         state = inputs
         src_nodes = {}
         dst_nodes = {}
