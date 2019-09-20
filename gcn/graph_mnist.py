@@ -44,7 +44,7 @@ mnist = tf.keras.datasets.mnist
 (X_train, y_train), (X_test, y_test) = mnist.load_data()
 
 X_train_graphs = []
-for i in range(1):
+for i in range(100):
     X_train_graphs.append(convert(X_train[i]))
 
 gcn = GCN(GT)
@@ -60,9 +60,10 @@ trainer = tf.compat.v1.train.AdamOptimizer().minimize(loss)
 no_classes = 10
 y = to_categorical(y_train, no_classes)
 
+EPOCHS = 10
 with tf.Session() as sess:
     tf.global_variables_initializer().run(session=sess)
-    for epoch in range(1000):
+    for epoch in range(EPOCHS):
         for i in range(len(X_train_graphs)):
             g = X_train_graphs[i]
             fd = {}

@@ -19,7 +19,8 @@ class Arc:
         assert from_node.node_type == arc_type.from_nt
         assert to_node.node_type == arc_type.to_nt
         self.arc_type = arc_type
-        self.values = np.array([from_node.id, to_node.id])
+        self.from_node = from_node
+        self.to_node = to_node
         self.id = self.arc_type.counter
         self.arc_type.counter += 1
 
@@ -77,5 +78,6 @@ class Graph:
         assert isinstance(arc_type, ArcType)
         arcs = []
         for a in self.arcs[arc_type]:
-            arcs.append(a.values)
+            arcs.append([self.nodes[arc_type.from_nt].index(a.from_node),
+                         self.nodes[arc_type.to_nt].index(a.to_node)])
         return np.array(arcs)
