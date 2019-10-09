@@ -3,12 +3,17 @@ import numpy as np
 
 
 class GCN:
-    def __init__(self, graph_type, depth):
+    def __init__(self, graph_type, depth, hidden_layers):
+        assert isinstance(hidden_layers, dict)
+        assert set(hidden_layers.keys()) == set(graph_type.node_types)
         self.gt = graph_type
         self.nns = {}
         for nt in self.gt.node_types:
-            self.nns[nt] = [tf.layers.Dense(units=32,activation=tf.nn.relu),
-                            tf.layers.Dense(units=nt.vector_size, activation=None)]
+            assert isinstance(hidden_layers[nt], (list, tuple))
+            layers = []
+            if hidden_layers:
+                layers += hidden_layers[nt] + [tf.layers.Dense(units=nt.vector_size, activation=None)]
+            self.nns[nt] = layers
         self.inputs = self.create_input_placeholders()
         self.outputs = self.build_net(self.inputs, depth)
 
@@ -23,7 +28,11 @@ class GCN:
     def aggregate_neighborhood(self, state, read_from_ids, agregate_to_ids, n_count):
         values = tf.nn.embedding_lookup(state, read_from_ids)
         summary_sum = tf.math.unsorted_segment_sum(values, agregate_to_ids, n_count)
-        return [summary_sum]
+        summary_max = tf.math.unsorted_segment_max(values, agregate_to_ids, n_count)
+        summary_max = tf.maximum(summary_max, -1.)
+        summary_min = tf.math.unsorted_segment_min(values, agregate_to_ids, n_count)
+        summary_min = tf.minimum(summary_min, 1.)
+        return [summary_sum, summary_max, summary_min]
 
     def build_nt_nn(self, node_type, state, neighborhoods):
         layer_input = tf.concat([state] + neighborhoods, axis=1)
@@ -47,12 +56,13 @@ class GCN:
             for nt in self.gt.node_types:
                 neighborhoods = []
                 for at in self.gt.arc_types:
-                    neighborhood = self.aggregate_neighborhood(
-                        state=state[at.to_nt],
-                        read_from_ids=dst_nodes[at],
-                        agregate_to_ids=src_nodes[at],
-                        n_count=n_count[nt])
-                    neighborhoods += neighborhood
+                    if at.from_nt == nt:
+                        neighborhood = self.aggregate_neighborhood(
+                            state=state[at.to_nt],
+                            read_from_ids=dst_nodes[at],
+                            agregate_to_ids=src_nodes[at],
+                            n_count=n_count[nt])
+                        neighborhoods += neighborhood
                 new_state[nt] = self.build_nt_nn(nt, state[nt], neighborhoods)
             state = new_state
         return state

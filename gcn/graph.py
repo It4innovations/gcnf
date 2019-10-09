@@ -33,8 +33,10 @@ class NodeType:
 
 
 class Node:
-    def __init__(self, node_type, values=[]):
+    def __init__(self, node_type, values=None):
         assert isinstance(node_type, NodeType)
+        if not values:
+            values = []
         assert len(values) <= node_type.vector_size
         self.node_type = node_type
         self.values = np.concatenate((np.array(values), np.zeros(node_type.vector_size - len(values))))
@@ -74,10 +76,29 @@ class Graph:
             nodes.append(n.values)
         return np.array(nodes)
 
-    def get_arcs_np(self, arc_type):
+    def append(self, graph):
+        assert isinstance(graph, Graph)
+        assert graph.graph_type == self.graph_type
+        for nt in graph.nodes:
+            self.nodes[nt] += graph.nodes[nt]
+        for at in graph.arcs:
+            self.arcs[at] += graph.arcs[at]
+
+    def get_arcs_np(self, arc_type, idx_shift_from=0, idx_shift_to=0):
         assert isinstance(arc_type, ArcType)
         arcs = []
         for a in self.arcs[arc_type]:
-            arcs.append([self.nodes[arc_type.from_nt].index(a.from_node),
-                         self.nodes[arc_type.to_nt].index(a.to_node)])
+            arcs.append([self.nodes[arc_type.from_nt].index(a.from_node) + idx_shift_from,
+                         self.nodes[arc_type.to_nt].index(a.to_node) + idx_shift_to])
         return np.array(arcs)
+
+    def get_nodes_degrees(self):
+        degrees = {}
+        for at in self.arcs:
+            if at.from_nt not in degrees:
+                degrees[at.from_nt] = {}
+            for a in self.arcs[at]:
+                if a.from_node not in degrees[at.from_nt]:
+                    degrees[at.from_nt][a.from_node] = 0
+                degrees[at.from_nt][a.from_node] += 1
+        return degrees
