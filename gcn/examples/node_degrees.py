@@ -2,7 +2,6 @@
 import random
 import tensorflow as tf
 import numpy as np
-import tensorflow as tf
 
 from ..graph import ArcType, NodeType, Graph, GraphType, Node, Arc 
 from ..gcn import GCN
@@ -10,7 +9,7 @@ from ..gcn import GCN
 NT = NodeType(8)
 AT = ArcType(NT, NT)
 
-GT = GraphType([NT, NT], [AT])
+GT = GraphType([NT], [AT])
 
 def gen_graph(n_nodes):
     g = Graph(GT)
