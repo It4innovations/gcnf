@@ -6,8 +6,8 @@ import numpy as np
 from ..graph import ArcType, NodeType, Graph, GraphType, Node, Arc 
 from ..gcn import GCN
 
-NT_GN = NodeType(4)
-NT_GOD = NodeType(8)
+NT_GN = NodeType(1)
+NT_GOD = NodeType(16)
 AT_GN_GN = ArcType(NT_GN, NT_GN)
 AT_GOD_GN = ArcType(NT_GOD, NT_GN)
 
@@ -44,7 +44,7 @@ loss = tf.losses.mean_squared_error(labels=labels, predictions=nn_output)
 trainer = tf.compat.v1.train.AdamOptimizer().minimize(loss)
 
 
-EPOCHS = 10000
+EPOCHS = 100000
 with tf.Session() as sess:
     tf.global_variables_initializer().run(session=sess)
     for epoch in range(EPOCHS):

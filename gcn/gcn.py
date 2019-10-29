@@ -63,6 +63,13 @@ class GCN:
                             agregate_to_ids=src_nodes[at],
                             n_count=n_count[nt])
                         neighborhoods += neighborhood
+                    if at.bidirectional and at.to_nt == nt:
+                        neighborhood = self.aggregate_neighborhood(
+                            state=state[at.from_nt],
+                            read_from_ids=src_nodes[at],
+                            agregate_to_ids=dst_nodes[at],
+                            n_count=n_count[nt])
+                        neighborhoods += neighborhood
                 new_state[nt] = self.build_nt_nn(nt, state[nt], neighborhoods)
             state = new_state
         return state

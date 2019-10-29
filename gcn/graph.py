@@ -2,13 +2,14 @@ import numpy as np
 
 
 class ArcType:
-    def __init__(self, from_nt, to_nt, name=""):
+    def __init__(self, from_nt, to_nt, name="", bidirectional=False):
         assert isinstance(from_nt, NodeType)
         assert isinstance(to_nt, NodeType)
         self.name = name
         self.from_nt = from_nt
         self.to_nt = to_nt
         self.counter = 0
+        self.bidirectional = bidirectional
 
 
 class Arc:

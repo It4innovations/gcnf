@@ -173,8 +173,55 @@ def test5():
     assert g1.get_arcs_np(at_nt2_nt1).shape == (5, 2)
 
 
+def test6():
+    nt1 = NodeType(4)
+    nt2 = NodeType(8)
+    at_bi = ArcType(nt1, nt2, bidirectional=True)
+    gt = GraphType((nt1, nt2), (at_bi,))
+    n1 = Node(nt1)
+    n2 = Node(nt1)
+    n3 = Node(nt2)
+    a1 = Arc(at_bi, n1, n3)
+    a2 = Arc(at_bi, n2, n3)
+    g = Graph(gt)
+    g.add_node(n1)
+    g.add_node(n2)
+    g.add_node(n3)
+    g.add_arc(a1)
+    g.add_arc(a2)
+
+    gcn = GCN(gt, 3, {nt1: [tf.layers.Dense(units=32, activation=tf.nn.leaky_relu)],
+                      nt2: [tf.layers.Dense(units=32, activation=tf.nn.leaky_relu)]})
+    ol = tf.layers.Dense(units=1,activation=tf.nn.sigmoid)
+
+    nn_output = ol(gcn.outputs[nt2])
+    print(nn_output)
+
+    labels = tf.placeholder(tf.float32, shape=(None, 1), name="labels")
+    loss = tf.losses.mean_squared_error(labels=labels, predictions=nn_output)
+    trainer = tf.compat.v1.train.AdamOptimizer().minimize(loss)
+
+    y = np.array([[2.0]])
+
+    with tf.Session() as sess:
+        tf.global_variables_initializer().run(session=sess)
+        for _ in range(1):
+            fd = {}
+            for nt in g.graph_type.node_types:
+                fd[gcn.inputs[nt]] = g.get_nodes_np(nt)
+            for at in g.graph_type.arc_types:
+                fd[gcn.inputs[at]] = g.get_arcs_np(at)
+            fd[labels] = y
+            print(len(g.nodes[nt1]))
+            print(fd)
+            l, y_, _, o = sess.run([loss, nn_output, trainer, gcn.outputs[nt2]], feed_dict=fd)
+            print(l)
+            print(y_)
+            print(o)
+
 test()
 test2()
 test3()
 test4()
 test5()
+test6()
