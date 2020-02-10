@@ -4,6 +4,9 @@ from ..gcn import GCN
 import tensorflow as tf
 import numpy as np
 
+tf.compat.v1.disable_eager_execution()
+
+
 def test():
     nt = NodeType(4, name="A")
     n1 = Node(nt, [1,2,3])
@@ -60,21 +63,21 @@ def test3():
         g.add_arc(Arc(at_nt2_nt2, g.nodes[nt2][i], g.nodes[nt2][i+1]))
         g.add_arc(Arc(at_nt2_nt2, g.nodes[nt2][i+1], g.nodes[nt2][i]))
     
-    gcn = GCN(gt, 2, {nt1: [tf.layers.Dense(units=32, activation=tf.nn.leaky_relu)],
-                      nt2: [tf.layers.Dense(units=16, activation=tf.nn.leaky_relu)]})
-    ol = tf.layers.Dense(units=1,activation=tf.nn.sigmoid)
+    gcn = GCN(gt, 2, {nt1: [tf.keras.layers.Dense(units=32, activation=tf.nn.leaky_relu)],
+                      nt2: [tf.keras.layers.Dense(units=16, activation=tf.nn.leaky_relu)]})
+    ol = tf.keras.layers.Dense(units=1, activation=tf.nn.sigmoid)
 
     nn_output = ol(gcn.outputs[nt1])
 
-    labels = tf.placeholder(tf.float32, shape=(None, 1), name="labels")
-    loss = tf.losses.mean_squared_error(labels=labels, predictions=nn_output)
+    labels = tf.compat.v1.placeholder(tf.float32, shape=(None, 1), name="labels")
+    loss = tf.losses.mean_squared_error(y_true=labels, y_pred=nn_output)
     trainer = tf.compat.v1.train.AdamOptimizer().minimize(loss)
 
     y = np.array([[0.2]])
     y_ = np.array([[0]])
 
-    with tf.Session() as sess:
-        tf.global_variables_initializer().run(session=sess)
+    with tf.compat.v1.Session() as sess:
+        tf.compat.v1.global_variables_initializer().run(session=sess)
         for _ in range(500):
             i += 1
             fd = {}
@@ -105,21 +108,21 @@ def test4():
     
     assert len(g.nodes[nt1]) == 3
 
-    gcn = GCN(gt, 3, {nt1: [tf.layers.Dense(units=32, activation=tf.nn.leaky_relu)]})
-    ol = tf.layers.Dense(units=1,activation=tf.nn.sigmoid)
+    gcn = GCN(gt, 3, {nt1: [tf.keras.layers.Dense(units=32, activation=tf.nn.leaky_relu)]})
+    ol = tf.keras.layers.Dense(units=1,activation=tf.nn.sigmoid)
 
     nn_output = ol(gcn.outputs[nt1])
     print(nn_output)
 
-    labels = tf.placeholder(tf.float32, shape=(None, 1), name="labels")
-    loss = tf.losses.mean_squared_error(labels=labels, predictions=nn_output)
+    labels = tf.compat.v1.placeholder(tf.float32, shape=(None, 1), name="labels")
+    loss = tf.losses.mean_squared_error(y_true=labels, y_pred=nn_output)
     trainer = tf.compat.v1.train.AdamOptimizer().minimize(loss)
 
     y = np.array([[0.2], [0.9], [0.4]])
     #y_ = np.array([[0]])
 
-    with tf.Session() as sess:
-        tf.global_variables_initializer().run(session=sess)
+    with tf.compat.v1.Session() as sess:
+        tf.compat.v1.global_variables_initializer().run(session=sess)
         #for _ in range(500):
         for _ in range(500):
             i += 1
@@ -190,21 +193,21 @@ def test6():
     g.add_arc(a1)
     g.add_arc(a2)
 
-    gcn = GCN(gt, 3, {nt1: [tf.layers.Dense(units=32, activation=tf.nn.leaky_relu)],
-                      nt2: [tf.layers.Dense(units=32, activation=tf.nn.leaky_relu)]})
-    ol = tf.layers.Dense(units=1,activation=tf.nn.sigmoid)
+    gcn = GCN(gt, 3, {nt1: [tf.keras.layers.Dense(units=32, activation=tf.nn.leaky_relu)],
+                      nt2: [tf.keras.layers.Dense(units=32, activation=tf.nn.leaky_relu)]})
+    ol = tf.keras.layers.Dense(units=1,activation=tf.nn.sigmoid)
 
     nn_output = ol(gcn.outputs[nt2])
     print(nn_output)
 
-    labels = tf.placeholder(tf.float32, shape=(None, 1), name="labels")
-    loss = tf.losses.mean_squared_error(labels=labels, predictions=nn_output)
+    labels = tf.compat.v1.placeholder(tf.float32, shape=(None, 1), name="labels")
+    loss = tf.losses.mean_squared_error(y_true=labels, y_pred=nn_output)
     trainer = tf.compat.v1.train.AdamOptimizer().minimize(loss)
 
     y = np.array([[2.0]])
 
-    with tf.Session() as sess:
-        tf.global_variables_initializer().run(session=sess)
+    with tf.compat.v1.Session() as sess:
+        tf.compat.v1.global_variables_initializer().run(session=sess)
         for _ in range(1):
             fd = {}
             for nt in g.graph_type.node_types:

@@ -1,5 +1,4 @@
 import tensorflow as tf
-import numpy as np
 
 
 class GCN:
@@ -12,7 +11,7 @@ class GCN:
             assert isinstance(hidden_layers[nt], (list, tuple))
             layers = []
             if hidden_layers:
-                layers += hidden_layers[nt] + [tf.layers.Dense(units=nt.vector_size, activation=None)]
+                layers += hidden_layers[nt] + [tf.keras.layers.Dense(units=nt.vector_size, activation=None)]
             self.nns[nt] = layers
         self.inputs = self.create_input_placeholders()
         self.outputs = self.build_net(self.inputs, depth)
@@ -20,17 +19,17 @@ class GCN:
     def create_input_placeholders(self):
         placeholders = {}
         for at in self.gt.arc_types:
-            placeholders[at] = tf.placeholder(tf.int32, (None, 2), 'ph-at-{}'.format(at.name))
+            placeholders[at] = tf.compat.v1.placeholder(tf.int32, (None, 2), 'ph-at-{}'.format(at.name))
         for nt in self.gt.node_types:
-            placeholders[nt] = tf.placeholder(tf.float32, (None, nt.vector_size), 'ph-nt-{}'.format(nt.name))
+            placeholders[nt] = tf.compat.v1.placeholder(tf.float32, (None, nt.vector_size), 'ph-nt-{}'.format(nt.name))
         return placeholders
 
-    def aggregate_neighborhood(self, state, read_from_ids, agregate_to_ids, n_count):
+    def aggregate_neighborhood(self, state, read_from_ids, aggregate_to_ids, n_count):
         values = tf.nn.embedding_lookup(state, read_from_ids)
-        summary_sum = tf.math.unsorted_segment_sum(values, agregate_to_ids, n_count)
-        summary_max = tf.math.unsorted_segment_max(values, agregate_to_ids, n_count)
+        summary_sum = tf.math.unsorted_segment_sum(values, aggregate_to_ids, n_count)
+        summary_max = tf.math.unsorted_segment_max(values, aggregate_to_ids, n_count)
         summary_max = tf.maximum(summary_max, -1.)
-        summary_min = tf.math.unsorted_segment_min(values, agregate_to_ids, n_count)
+        summary_min = tf.math.unsorted_segment_min(values, aggregate_to_ids, n_count)
         summary_min = tf.minimum(summary_min, 1.)
         return [summary_sum, summary_max, summary_min]
 
@@ -60,14 +59,14 @@ class GCN:
                         neighborhood = self.aggregate_neighborhood(
                             state=state[at.to_nt],
                             read_from_ids=dst_nodes[at],
-                            agregate_to_ids=src_nodes[at],
+                            aggregate_to_ids=src_nodes[at],
                             n_count=n_count[nt])
                         neighborhoods += neighborhood
                     if at.bidirectional and at.to_nt == nt:
                         neighborhood = self.aggregate_neighborhood(
                             state=state[at.from_nt],
                             read_from_ids=src_nodes[at],
-                            agregate_to_ids=dst_nodes[at],
+                            aggregate_to_ids=dst_nodes[at],
                             n_count=n_count[nt])
                         neighborhoods += neighborhood
                 new_state[nt] = self.build_nt_nn(nt, state[nt], neighborhoods)
