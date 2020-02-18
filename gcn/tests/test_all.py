@@ -70,7 +70,7 @@ def test3():
     nn_output = ol(gcn.outputs[nt1])
 
     labels = tf.compat.v1.placeholder(tf.float32, shape=(None, 1), name="labels")
-    loss = tf.losses.mean_squared_error(y_true=labels, y_pred=nn_output)
+    loss = tf.compat.v1.losses.mean_squared_error(labels=labels, predictions=nn_output)
     trainer = tf.compat.v1.train.AdamOptimizer().minimize(loss)
 
     y = np.array([[0.2]])
@@ -115,7 +115,7 @@ def test4():
     print(nn_output)
 
     labels = tf.compat.v1.placeholder(tf.float32, shape=(None, 1), name="labels")
-    loss = tf.losses.mean_squared_error(y_true=labels, y_pred=nn_output)
+    loss = tf.compat.v1.losses.mean_squared_error(labels=labels, predictions=nn_output)
     trainer = tf.compat.v1.train.AdamOptimizer().minimize(loss)
 
     y = np.array([[0.2], [0.9], [0.4]])
@@ -201,7 +201,7 @@ def test6():
     print(nn_output)
 
     labels = tf.compat.v1.placeholder(tf.float32, shape=(None, 1), name="labels")
-    loss = tf.losses.mean_squared_error(y_true=labels, y_pred=nn_output)
+    loss = tf.compat.v1.losses.mean_squared_error(labels=labels, predictions=nn_output)
     trainer = tf.compat.v1.train.AdamOptimizer().minimize(loss)
 
     y = np.array([[2.0]])

@@ -9,10 +9,10 @@ from ..gcn import GCN
 tf.compat.v1.disable_eager_execution()
 
 
-NT_GN = NodeType(1)
+NT_GN = NodeType(4)
 NT_GOD = NodeType(16)
-AT_GN_GN = ArcType(NT_GN, NT_GN)
-AT_GOD_GN = ArcType(NT_GOD, NT_GN)
+AT_GN_GN = ArcType(NT_GN, NT_GN, bidirectional=True)
+AT_GOD_GN = ArcType(NT_GOD, NT_GN, bidirectional=True)
 
 GT = GraphType([NT_GN, NT_GOD], [AT_GN_GN, AT_GOD_GN])
 
@@ -42,7 +42,7 @@ nn_output = ol(hl(gcn.outputs[NT_GOD]))
 
 
 labels = tf.compat.v1.placeholder(tf.float32, shape=(None, 1), name="labels")
-loss = tf.losses.mean_squared_error(y_true=labels, y_pred=nn_output)
+loss = tf.compat.v1.losses.mean_squared_error(labels=labels, predictions=nn_output)
 
 trainer = tf.compat.v1.train.AdamOptimizer().minimize(loss)
 
@@ -59,9 +59,4 @@ with tf.compat.v1.Session() as sess:
                 fd[gcn.inputs[at]] = g.get_arcs_np(at)
             fd[labels] = n_nodes
             l, new_repr, y_, _ = sess.run([loss, gcn.outputs[NT_GOD], nn_output, trainer], feed_dict=fd)
-            print(new_repr)
-            print(y_)
-            print(n_nodes)
             print("loss: {}".format(l))
-            #print("accuracy: {}".format(acc))
-            print("---")
