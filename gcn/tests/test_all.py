@@ -215,16 +215,41 @@ def test6():
             for at in g.graph_type.arc_types:
                 fd[gcn.inputs[at]] = g.get_arcs_np(at)
             fd[labels] = y
-            print(len(g.nodes[nt1]))
-            print(fd)
+            #print(len(g.nodes[nt1]))
+            #print(fd)
             l, y_, _, o = sess.run([loss, nn_output, trainer, gcn.outputs[nt2]], feed_dict=fd)
-            print(l)
-            print(y_)
-            print(o)
+            #print(l)
+            #print(y_)
+            #print(o)
 
-test()
-test2()
-test3()
-test4()
-test5()
-test6()
+
+def test7():
+    nt1 = NodeType(4)
+    at1 = ArcType(nt1, nt1)
+    gt = GraphType((nt1,), (at1,))
+
+    gcn = GCN(gt, 1, {nt1: [tf.keras.layers.Dense(units=32, activation=tf.nn.leaky_relu)]})
+
+    ol = tf.keras.layers.Dense(units=1,activation=tf.nn.sigmoid)
+    nn_output = ol(gcn.outputs[nt1])
+
+    labels = tf.compat.v1.placeholder(tf.float32, shape=(None, 1), name="labels")
+    loss = tf.compat.v1.losses.mean_squared_error(labels=labels, predictions=nn_output)
+    trainer = tf.compat.v1.train.AdamOptimizer().minimize(loss)
+
+    y = np.array([[2.0]])
+
+    g = Graph(gt)
+    n1 = Node(nt1)
+    g.add_node(n1)
+
+    with tf.compat.v1.Session() as sess:
+        tf.compat.v1.global_variables_initializer().run(session=sess)
+        for _ in range(1):
+            fd = {}
+            for nt in g.graph_type.node_types:
+                fd[gcn.inputs[nt]] = g.get_nodes_np(nt)
+            for at in g.graph_type.arc_types:
+                fd[gcn.inputs[at]] = g.get_arcs_np(at)
+            fd[labels] = y
+            l, y_, _, o = sess.run([loss, nn_output, trainer, gcn.outputs[nt]], feed_dict=fd)

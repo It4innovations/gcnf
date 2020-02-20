@@ -91,7 +91,7 @@ class Graph:
         for a in self.arcs[arc_type]:
             arcs.append([self.nodes[arc_type.from_nt].index(a.from_node) + idx_shift_from,
                          self.nodes[arc_type.to_nt].index(a.to_node) + idx_shift_to])
-        return np.array(arcs)
+        return np.array(arcs).reshape((-1, 2))
 
     def get_nodes_degrees(self):
         degrees = {}
