@@ -240,8 +240,9 @@ def test7():
     y = np.array([[2.0]])
 
     g = Graph(gt)
-    n1 = Node(nt1)
-    g.add_node(n1)
+
+    assert g.get_arcs_np(at1).shape == (0, 2)
+    assert g.get_nodes_np(nt1).shape == (0, 4)
 
     with tf.compat.v1.Session() as sess:
         tf.compat.v1.global_variables_initializer().run(session=sess)

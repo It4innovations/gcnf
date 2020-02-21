@@ -75,7 +75,7 @@ class Graph:
         nodes = []
         for n in self.nodes[node_type]:
             nodes.append(n.values)
-        return np.array(nodes)
+        return np.array(nodes).reshape((-1, node_type.vector_size))
 
     def append(self, graph):
         assert isinstance(graph, Graph)
