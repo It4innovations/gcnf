@@ -43,13 +43,15 @@ nn_output = ol(hl(gcn.outputs[NT_GOD]))
 
 labels = tf.compat.v1.placeholder(tf.float32, shape=(None, 1), name="labels")
 loss = tf.compat.v1.losses.mean_squared_error(labels=labels, predictions=nn_output)
+tb_loss = tf.compat.v1.summary.scalar("mse", loss)
 
 trainer = tf.compat.v1.train.AdamOptimizer().minimize(loss)
 
 
-EPOCHS = 100000
+EPOCHS = 10000
 with tf.compat.v1.Session() as sess:
     tf.compat.v1.global_variables_initializer().run(session=sess)
+    tb_writer = tf.compat.v1.summary.FileWriter("./tb/examples/node_count", session=sess)
     for epoch in range(EPOCHS):
             g, n_nodes = gen_graph(random.randint(10, 100))
             fd = {}
@@ -58,5 +60,6 @@ with tf.compat.v1.Session() as sess:
             for at in g.graph_type.arc_types:
                 fd[gcn.inputs[at]] = g.get_arcs_np(at)
             fd[labels] = n_nodes
-            l, new_repr, y_, _ = sess.run([loss, gcn.outputs[NT_GOD], nn_output, trainer], feed_dict=fd)
+            tbl, l, new_repr, y_, _ = sess.run([tb_loss, loss, gcn.outputs[NT_GOD], nn_output, trainer], feed_dict=fd)
+            tb_writer.add_summary(tbl)
             print("loss: {}".format(l))
