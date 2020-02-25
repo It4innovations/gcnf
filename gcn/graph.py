@@ -1,5 +1,5 @@
 import numpy as np
-
+import random
 
 class ArcType:
     def __init__(self, from_nt, to_nt, name="", bidirectional=False):
@@ -103,3 +103,28 @@ class Graph:
                     degrees[at.from_nt][a.from_node] = 0
                 degrees[at.from_nt][a.from_node] += 1
         return degrees
+
+
+class GraphSet:
+    def __init__(self, graphs):
+        for g in graphs:
+            assert isinstance(g, Graph)
+        self.graphs = graphs
+        self.graph_type = graphs[0].graph_type
+        self.size = len(graphs)
+        self.cursor = 0
+
+    def shuffle(self):
+        random.shuffle(self.graphs)
+        self.cursor = 0
+
+    def next_batch(self, size):
+        batch_graph = Graph(self.graph_type)
+        [batch_graph.append(g) for g in self.graphs[self.cursor:self.cursor+size]]
+        self.cursor += size
+        if self.cursor >= self.size:
+            end = True
+            self.shuffle()
+        else:
+            end = False
+        return batch_graph, end

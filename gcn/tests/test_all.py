@@ -1,4 +1,4 @@
-from ..graph import Arc, ArcType, Node, NodeType, Graph, GraphType
+from ..graph import Arc, ArcType, Node, NodeType, Graph, GraphType, GraphSet
 from ..gcn import GCN
 
 import tensorflow as tf
@@ -254,3 +254,48 @@ def test7():
                 fd[gcn.inputs[at]] = g.get_arcs_np(at)
             fd[labels] = y
             l, y_, _, o = sess.run([loss, nn_output, trainer, gcn.outputs[nt]], feed_dict=fd)
+
+
+def test8():
+    def gen_graph(gt, nt1, at1):
+        n1 = Node(nt1)
+        n2 = Node(nt1)
+        n3 = Node(nt1)
+        a1 = Arc(at1, n1, n3)
+        a2 = Arc(at1, n2, n3)
+        g = Graph(gt)
+        g.add_node(n1)
+        g.add_node(n2)
+        g.add_node(n3)
+        g.add_arc(a1)
+        g.add_arc(a2)
+        return g
+    nt1 = NodeType(4)
+    at1 = ArcType(nt1, nt1)
+    gt = GraphType((nt1,), (at1,))
+    graphs = [gen_graph(gt, nt1, at1) for _ in range(10)]
+    gs = GraphSet(graphs)
+    batch, completed = gs.next_batch(10)
+    assert completed == True
+    assert gs.cursor == 0
+    batch, completed = gs.next_batch(4)
+    assert isinstance(batch, Graph)
+    assert len(batch.nodes[nt1]) == 4 * 3
+    assert len(batch.arcs[at1]) == 4 * 2
+    assert completed == False
+    assert gs.cursor == 4
+    batch, completed = gs.next_batch(6)
+    assert completed == True
+    assert len(batch.nodes[nt1]) == 6 * 3
+    assert len(batch.arcs[at1]) == 6 * 2
+    assert gs.cursor == 0
+    batch, completed = gs.next_batch(2)
+    assert completed == False
+    assert len(batch.nodes[nt1]) == 2 * 3
+    assert len(batch.arcs[at1]) == 2 * 2
+    assert gs.cursor == 2
+    batch, completed = gs.next_batch(10)
+    assert completed == True
+    assert len(batch.nodes[nt1]) == 8 * 3
+    assert len(batch.arcs[at1]) == 8 * 2
+    assert gs.cursor == 0
