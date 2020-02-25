@@ -106,16 +106,20 @@ class Graph:
 
 
 class GraphSet:
-    def __init__(self, graphs):
+    def __init__(self, graphs, labels):
         for g in graphs:
             assert isinstance(g, Graph)
+        assert len(graphs) == len(labels)
         self.graphs = graphs
+        self.labels = labels
         self.graph_type = graphs[0].graph_type
         self.size = len(graphs)
         self.cursor = 0
 
     def shuffle(self):
-        random.shuffle(self.graphs)
+        t = list(zip(self.graphs, self.labels))
+        random.shuffle(t)
+        self.graphs, self.labels = zip(*t)
         self.cursor = 0
 
     def next_batch(self, size):

@@ -274,7 +274,8 @@ def test8():
     at1 = ArcType(nt1, nt1)
     gt = GraphType((nt1,), (at1,))
     graphs = [gen_graph(gt, nt1, at1) for _ in range(10)]
-    gs = GraphSet(graphs)
+    labels = [[i] for i in range(10)]
+    gs = GraphSet(graphs, labels)
     batch, completed = gs.next_batch(10)
     assert completed == True
     assert gs.cursor == 0
