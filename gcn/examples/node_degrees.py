@@ -3,7 +3,7 @@ import random
 import tensorflow as tf
 import numpy as np
 
-from ..graph import ArcType, NodeType, Graph, GraphType, Node, Arc 
+from ..graph import ArcType, NodeType, Graph, GraphType, Node, Arc, GraphSet
 from ..gcn import GCN
 
 tf.compat.v1.disable_eager_execution()
@@ -27,13 +27,12 @@ def gen_graph(n_nodes):
         y[idx2] += 1
         g.add_arc(Arc(AT, g.nodes[NT][idx1], g.nodes[NT][idx2]))
         g.add_arc(Arc(AT, g.nodes[NT][idx2], g.nodes[NT][idx1]))
-    return g, y.reshape((-1, 1))
+    return g, y
 
 
-g, d = gen_graph(100)
-
-print(g.get_nodes_np(NT), g.get_arcs_np(AT))
-print(d)
+data = [gen_graph(100) for _ in range(100)]
+X, y = zip(*data)
+gs = GraphSet(X, y)
 
 net_structures = {NT: [tf.keras.layers.Dense(units=32, activation=tf.nn.leaky_relu)]}
 gcn = GCN(GT, depth=5, hidden_layers=net_structures)
@@ -49,16 +48,20 @@ tb_loss = tf.compat.v1.summary.scalar("mse", loss)
 trainer = tf.compat.v1.train.AdamOptimizer().minimize(loss)
 
 EPOCHS = 10000
+epoch = 0
 with tf.compat.v1.Session() as sess:
     tf.compat.v1.global_variables_initializer().run(session=sess)
     tb_writer = tf.compat.v1.summary.FileWriter("./tb/examples/node_degrees", session=sess)
-    for epoch in range(EPOCHS):
+    while epoch < EPOCHS:
+        g, d, epoch_completed = gs.next_batch(10)
         fd = {}
         for nt in g.graph_type.node_types:
             fd[gcn.inputs[nt]] = g.get_nodes_np(nt)
         for at in g.graph_type.arc_types:
             fd[gcn.inputs[at]] = g.get_arcs_np(at)
-        fd[labels] = d
+        fd[labels] = np.array(d).reshape((len(g.nodes[NT]), 1))
         tbl, l, new_repr, y_, _ = sess.run([tb_loss, loss, gcn.outputs[NT], nn_output, trainer], feed_dict=fd)
         tb_writer.add_summary(tbl)
         print("loss: {}".format(l))
+        if epoch_completed:
+            epoch += 1

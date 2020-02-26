@@ -3,7 +3,7 @@ import random
 import tensorflow as tf
 import numpy as np
 
-from ..graph import ArcType, NodeType, Graph, GraphType, Node, Arc 
+from ..graph import ArcType, NodeType, Graph, GraphType, Node, Arc, GraphSet
 from ..gcn import GCN
 
 tf.compat.v1.disable_eager_execution()
@@ -30,7 +30,7 @@ def gen_graph(n_nodes):
         g.add_arc(Arc(AT_GN_GN, g.nodes[NT_GN][idx1], g.nodes[NT_GN][idx2]))
         g.add_arc(Arc(AT_GN_GN, g.nodes[NT_GN][idx2], g.nodes[NT_GN][idx1]))
     y = np.array([n_nodes])
-    return g, y.reshape((-1, 1))
+    return g, y
 
 
 net_structures = {NT_GN: [tf.keras.layers.Dense(units=32, activation=tf.nn.leaky_relu)],
@@ -47,19 +47,26 @@ tb_loss = tf.compat.v1.summary.scalar("mse", loss)
 
 trainer = tf.compat.v1.train.AdamOptimizer().minimize(loss)
 
+data = [gen_graph(random.randint(10, 100)) for _ in range(100)]
+X, y = zip(*data)
 
-EPOCHS = 10000
+gs = GraphSet(X, y)
+
+EPOCHS = 1000
+epoch = 0
 with tf.compat.v1.Session() as sess:
     tf.compat.v1.global_variables_initializer().run(session=sess)
     tb_writer = tf.compat.v1.summary.FileWriter("./tb/examples/node_count", session=sess)
-    for epoch in range(EPOCHS):
-            g, n_nodes = gen_graph(random.randint(10, 100))
-            fd = {}
-            for nt in g.graph_type.node_types:
-                fd[gcn.inputs[nt]] = g.get_nodes_np(nt)
-            for at in g.graph_type.arc_types:
-                fd[gcn.inputs[at]] = g.get_arcs_np(at)
-            fd[labels] = n_nodes
-            tbl, l, new_repr, y_, _ = sess.run([tb_loss, loss, gcn.outputs[NT_GOD], nn_output, trainer], feed_dict=fd)
-            tb_writer.add_summary(tbl)
-            print("loss: {}".format(l))
+    while epoch < EPOCHS:
+        g, n_nodes, epoch_completed = gs.next_batch(10)
+        fd = {}
+        for nt in g.graph_type.node_types:
+            fd[gcn.inputs[nt]] = g.get_nodes_np(nt)
+        for at in g.graph_type.arc_types:
+            fd[gcn.inputs[at]] = g.get_arcs_np(at)
+        fd[labels] = n_nodes
+        tbl, l, new_repr, y_, _ = sess.run([tb_loss, loss, gcn.outputs[NT_GOD], nn_output, trainer], feed_dict=fd)
+        tb_writer.add_summary(tbl)
+        print("loss: {}".format(l))
+        if epoch_completed:
+            epoch += 1
