@@ -276,26 +276,31 @@ def test8():
     graphs = [gen_graph(gt, nt1, at1) for _ in range(10)]
     labels = [[i] for i in range(10)]
     gs = GraphSet(graphs, labels)
-    batch, completed = gs.next_batch(10)
+    batch, labels, completed = gs.next_batch(10)
+    assert len(labels) == 10
     assert completed == True
     assert gs.cursor == 0
-    batch, completed = gs.next_batch(4)
+    batch, labels, completed = gs.next_batch(4)
+    assert len(labels) == 4
     assert isinstance(batch, Graph)
     assert len(batch.nodes[nt1]) == 4 * 3
     assert len(batch.arcs[at1]) == 4 * 2
     assert completed == False
     assert gs.cursor == 4
-    batch, completed = gs.next_batch(6)
+    batch, labels, completed = gs.next_batch(6)
+    assert len(labels) == 6
     assert completed == True
     assert len(batch.nodes[nt1]) == 6 * 3
     assert len(batch.arcs[at1]) == 6 * 2
     assert gs.cursor == 0
-    batch, completed = gs.next_batch(2)
+    batch, labels, completed = gs.next_batch(2)
+    assert len(labels) == 2
     assert completed == False
     assert len(batch.nodes[nt1]) == 2 * 3
     assert len(batch.arcs[at1]) == 2 * 2
     assert gs.cursor == 2
-    batch, completed = gs.next_batch(10)
+    batch, labels, completed = gs.next_batch(10)
+    assert len(labels) == 8
     assert completed == True
     assert len(batch.nodes[nt1]) == 8 * 3
     assert len(batch.arcs[at1]) == 8 * 2

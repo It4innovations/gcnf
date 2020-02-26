@@ -125,10 +125,11 @@ class GraphSet:
     def next_batch(self, size):
         batch_graph = Graph(self.graph_type)
         [batch_graph.append(g) for g in self.graphs[self.cursor:self.cursor+size]]
+        labels = self.labels[self.cursor:self.cursor+size]
         self.cursor += size
         if self.cursor >= self.size:
             end = True
             self.shuffle()
         else:
             end = False
-        return batch_graph, end
+        return batch_graph, labels, end
