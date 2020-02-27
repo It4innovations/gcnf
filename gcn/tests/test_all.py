@@ -305,3 +305,7 @@ def test8():
     assert len(batch.nodes[nt1]) == 8 * 3
     assert len(batch.arcs[at1]) == 8 * 2
     assert gs.cursor == 0
+    all_samples, labels = gs.get_all_samples()
+    assert len(labels) == 10
+    assert len(all_samples.nodes[nt1]) == 10 * 3
+    assert len(all_samples.arcs[at1]) == 10 * 2

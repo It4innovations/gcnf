@@ -133,3 +133,8 @@ class GraphSet:
         else:
             end = False
         return batch_graph, labels, end
+
+    def get_all_samples(self):
+        batch_graph = Graph(self.graph_type)
+        [batch_graph.append(g) for g in self.graphs]
+        return batch_graph, self.labels
