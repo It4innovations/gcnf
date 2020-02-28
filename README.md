@@ -4,12 +4,12 @@ GCN is an open source Tensorflow-based framework for developing deep learning ap
 
 ## Examples
 
-Examples can be found at  `gcn/examples`.
+Examples can be found at  `gcnf/examples`.
 
 ### Node-level features
 
-*  `gcn/examples/node_degrees.py` demostrates how to learn node degrees
+*  `gcnf/examples/node_degrees.py` demostrates how to learn node degrees
 
 ### Graph-level features
 
-*  `gcn/examples/graph_node_count.py` demostrates how to learn number of nodes in graphs
+*  `gcnf/examples/graph_node_count.py` demostrates how to learn number of nodes in graphs

@@ -7,7 +7,7 @@ with open('requirements.txt') as reqs:
     ]
 
 
-setup(name='gcn',
+setup(name='gcnf',
       version='0.1',
       description='Framework for deep learning on graph structures',
       long_description_content_type='text/markdown',

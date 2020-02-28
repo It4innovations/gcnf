@@ -1,6 +1,7 @@
 import numpy as np
 import random
 
+
 class ArcType:
     def __init__(self, from_nt, to_nt, name="", bidirectional=False):
         assert isinstance(from_nt, NodeType)
